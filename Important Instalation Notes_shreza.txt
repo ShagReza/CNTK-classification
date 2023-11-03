@@ -1,0 +1,78 @@
+Manual Binary Instalation (https://github.com/Microsoft/CNTK/wiki/Setup-Windows-Binary-Manual)
+
+0- Install Windows 10
+
+
+1- First download cntk CPU version 
+
+
+
+2-copy it in: C:\local\cntk
+
+
+
+3- set environment variables:
+	setx MYCNTKPATH C:\local\cntk
+
+
+4-Install VS 2015 and run:
+	 c:\local\cntk\prerequisites\VS2015\vc_redist.x64.exe
+
+
+5-Install Microsoft MPI Version 7 (7.0.12437.6) 
+	can be installed from c:\local\cntk\prerequisites\MsMPiSetup.exe
+
+
+
+6-downlad Anaconda Python (Anaconda3-4.1.1-Windows-x86_64)
+
+
+
+7- install it in:
+	C:\local\Anaconda3-4.1.1-Windows-x86_64
+
+
+8- create a conda environment (called cntk-py35 here) and activate it (net is needed):
+	cd C:\local\Anaconda3-4.1.1-Windows-x86_64\scripts
+   	conda env create --file [CNTK repo root]\scripts\install\windows\conda-windows-cntk-py35-environment.yml
+    	activate C:\local\Anaconda3-4.1.1-Windows-x86_64\envs\cntk-py35
+	
+
+
+9- Install CNTK Python Environment
+	pip install c:\local\cntk\cntk\python\cntk-2.0.beta11.0-cp35-cp35m-win_amd64.whl
+
+
+10-set environment variable:
+	set PYTHONPATH to C:\local\Anaconda3\Lib\site-packages
+
+
+11-Run Example in python environment:
+	cd C:\local\Anaconda3-4.1.1-Windows-x86_64\scripts
+	activate C:\local\Anaconda3-4.1.1-Windows-x86_64\envs\cntk-py35
+	cd c:\local\cntk\Tutorials\NumpyInterop
+	python FeedForwardNet.py
+
+	You will see the following output on the console:
+
+	Minibatch[   1- 128]: loss = 0.564038 * 3200
+	Minibatch[ 129- 256]: loss = 0.308571 * 3200
+	Minibatch[ 257- 384]: loss = 0.295577 * 3200
+	Minibatch[ 385- 512]: loss = 0.270765 * 3200
+	Minibatch[ 513- 640]: loss = 0.252143 * 3200
+	Minibatch[ 641- 768]: loss = 0.234520 * 3200
+	Minibatch[ 769- 896]: loss = 0.231275 * 3200
+	Minibatch[ 897-1024]: loss = 0.215522 * 3200
+	Finished Epoch [1]: loss = 0.296552 * 25600
+	error rate on an unseen minibatch 0.040000
+
+
+12- Run Example with Brainscript:
+	set PATH=c:\local\cntk\cntk;%PATH%
+	cd c:\local\CNTK\Tutorials\HelloWorld-LogisticRegression
+	cntk configFile=lr_bs.cntk makeMode=false command=Train
+	
+	output:
+	Finished Epoch[49 of 50]: [Training] lr = 0.04173276 * 1000; err = 0.01124948 * 1000; totalSamplesSeen = 49000; learningRatePerSample = 0.039999999; epochTime=0.049659s
+	Finished Epoch[50 of 50]: [Training] lr = 0.04399402 * 1000; err = 0.01202178 * 1000; totalSamplesSeen = 50000; learningRatePerSample = 0.039999999; epochTime=0.052725s
+	COMPLETED.

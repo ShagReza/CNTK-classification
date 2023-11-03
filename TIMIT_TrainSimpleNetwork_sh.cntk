@@ -1,0 +1,292 @@
+# If set to true, always initialize the network on CPU, making initialization consistent across CPU and GPU targets (for testing).
+initOnCPUOnly=true
+# command: order of commands running  e.g.:command = train:dummynode:test:Output
+# command=Output 
+# command=TIMIT_TrainSimple:Output:TIMIT_DumpNodes
+#command=TIMIT_TrainSimple:Output:TIMIT_DumpNodes:Test
+command=TIMIT_TrainSimple
+#command=TIMIT_DumpNodes:Output
+stderr = E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp\OutTrain.log #log file
+precision=float #The valid values are ﬂoat (default) and double
+#To run gradient check you should set precision to double.
+
+
+
+#######################################
+#  TRAINING CONFIG (Simple, Fixed LR) #
+#######################################
+
+TIMIT_TrainSimple=[
+    action=train
+	# NumCPUThreads=-2 # maximum CPU threads,default value is0,which means using whatever number of threads determined 
+	modelPath=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp/cntkSpeech.dnn
+
+    # deviceId=-1 for CPU,  deviceId=0 for GPU devices   deviceId=auto for the best device available
+    deviceId=-1
+
+    traceLevel=1 # 0 (limited output), 1 (medium output) and 2 (verbose output) 
+	
+	#ShareNodeValueMatrices=true
+	
+	#numMBsToShowResult:display training statistics after how many minibatches,Default is 10.
+
+    # notation xxx:yyy*n:zzz is equivalent to xxx, then yyy repeated n times, then zzz
+    # example: 10:20*3:5 is equivalent to 10:20:20:20:5
+    SimpleNetworkBuilder=[
+		layerSizes=792:512*3:183
+        trainingCriterion=CrossEntropyWithSoftmax
+        evalCriterion=ClassificationError
+        layerTypes=RectifiedLinear #sigmoid (default), Tanh, and RectifiedLinear
+        initValueScale=1.0
+        applyMeanVarNorm=true
+        uniformInit=true
+        needPrior=true	
+		#addDropoutNodes=false #whether to add drop-out nodes
+		#keepCheckPointFiles ????
+		# maxTempMemSizeInSamplesForCNN: maximum temporary memory used when packaging and unpackaging input feature - don't set it!
+		# executionEngine:the execution engine to use - don't set it!
+    ]
+
+    SGD=[
+        # epochSize=0 means epochSize is the size of the training set
+        epochSize=0 #the number of samples in each epoch
+        minibatchSize=256:1024
+        #learningRatesPerMB=0.8:3.2*14:0.08 #learning rates per minibatch
+		learningRatesPerMB=0.8:3.2*14:2 #learning rates per minibatch
+		#minibatchSize=128
+		#learningRatesPerMB=2
+        momentumPerMB=0.9 #0:0.9
+        dropoutRate=0.0 #dropoutRate=0.5*10:0.2
+        #maxEpochs=100
+		maxEpochs=1
+		#learningRatesPerSample
+		#momentumPerSample
+		
+		#settings for Auto Adjust Learning Rate
+        AutoAdjust=[
+            # auto learning rate adjustment:2 modes(SearchBeforeEpoch and AdjustAfterEpoch)            			
+			autoAdjustLR=AdjustAfterEpoch
+            reduceLearnRateIfImproveLessThan=0
+			learnRateDecreaseFactor=0.5
+			increaseLearnRateIfImproveMoreThan=1000000000
+			learnRateIncreaseFactor=1.382
+			loadBestModel=true
+			#learnRateAdjustInterval			
+            
+            #autoAdjustLR=SearchBeforeEpoch 
+            #numMiniBatch4LRSearch=500
+            #numPrevLearnRates=5
+            #numBestSearchEpoch=1
+        ]
+		
+		#Gradient control:??
+        #gradientClippingWithTruncation=true
+        clippingThresholdPerSample=1#INF    # 1#INF  means infinity (i.e., clipping is turned off)
+		#Adaptation??
+		#Gradient Check?
+		#To run gradient check you should set precision to double.
+		
+    ]
+
+    # Parameter values for the reader
+    reader=[
+        # reader to use
+        readerType=HTKMLFReader
+        readMethod=blockRandomize
+
+        miniBatchMode=Partial
+        randomize=Auto
+        verbosity=0
+
+        features=[
+            dim=792
+			#scpFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/trainscp.fbank.cntk.rnn
+			scpFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/1.rnn
+        ]
+
+        labels=[
+            # mlfFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/TIMIT.train.align_cistate.mlf.cntk
+			mlfFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/aMLF.cntk
+            labelDim=183
+            labelMappingFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/TIMIT.statelist
+        ]
+    ]
+	
+	cvReader=[
+        readerType=HTKMLFReader
+        readMethod=blockRandomize
+        miniBatchMode=Partial
+        randomize=Auto
+        verbosity=0
+        features=[
+            dim=792
+            scpFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\TIMIT.dev.scp.fbank.fullpath.rnn
+        ]
+
+        labels=[
+            mlfFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\TIMIT.dev.align_cistate.mlf.cntk
+            labelDim=183
+            labelMappingFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/TIMIT.statelist
+        ]
+    ]
+	
+	#makeMode=false #If false the training will restart from scratch.	
+]
+
+#######################################
+#  Adapt Command #
+#######################################
+#??????????????????????????????
+
+
+
+#######################################
+#  Test or Eval Command #
+#######################################
+Test = [
+    action = eval
+	modelPath=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp/cntkSpeech.dnn
+	reader=[
+        # reader to use
+        readerType=HTKMLFReader
+        readMethod=blockRandomize
+
+        miniBatchMode=Partial
+        randomize=Auto
+        verbosity=0
+
+        features=[
+            dim=792
+            scpFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\TIMIT.core.scp.fbank.fullpath.rnn
+        ]
+
+        labels=[
+            mlfFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\TIMIT.core.align_cistate.mlf.cntk
+            labelDim=183
+            labelMappingFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/TIMIT.statelist
+        ]
+    ]
+	# minibatchSize – the minibatch size to use when reading and processing the dataset ???
+	# epochSize – the size of dataset. Default is 0. The entire dataset will be evaluated if it’s set to 0.
+	# numMBsToShowResult – indicates after how many minibatches the intermediate results should be shown.
+	# evalNodeNames – an array of one or more node names to evaluate.
+]
+
+
+
+
+#######################################
+#  Write Command #
+#######################################
+# output the results
+Output = {
+    action = "write" 
+	reader=[
+        # reader to use
+        readerType=HTKMLFReader
+        readMethod=blockRandomize
+
+        miniBatchMode=Partial
+        randomize=Auto
+        verbosity=1
+
+        features=[
+            dim=792
+            scpFile=E:\CNTK\TIMIT\TimitShReza\SimpleNetwork/1.rnn
+        ]
+    ]
+	modelPath="E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp\cntkSpeech.dnn"
+	#outputNodeNames=ScaledLogLikelihood
+	outputNodeNames=HLast
+	#outputNodeNames=H3 #output of third hidden  layer 
+	#outputNodeNames=H1
+    outputPath = E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp\Net.txt   #dump the output to this text file
+	#writer ????
+	#minibatchSize
+	#epochSize
+}
+
+
+
+#######################################
+#  Dumpnode Command #
+#######################################
+TIMIT_DumpNodes={
+	action=dumpnode
+	modelPath="E:\CNTK\TIMIT\TimitShReza\SimpleNetwork\temp\cntkSpeech.dnn" #the model name that we want to read
+	#printValues=true #node names and their values
+	printValues=false #node names and equations
+	#nodeName
+	#outputFile
+	#printMetadata
+}
+
+
+
+#######################################
+#  CV #
+#######################################
+#????????????????????
+
+
+
+
+#######################################
+#  Edit Command #
+#######################################
+#This command executes a model editing language (MEL) script
+#???????????????
+
+
+
+
+#######################################
+# SVD Command #
+#######################################
+#???????????????
+
+
+#######################################
+# WriteWordAndClass Command #
+#######################################
+#???????????????
+
+
+#######################################
+# CreateLabelMap Command #
+#######################################
+#???????????????
+
+#######################################
+# Plot Command #
+#######################################
+#???????????????
+
+
+#######################################
+# ConvertDBN Command # to convert a model generated by Microsoft’s dbn.exe tool to a CNTK model
+#######################################
+#???????????????
+
+
+
+
+###########################################
+# AdvancedCommandLineParsingRules
+
+#1:conﬁguration data can be one of the following types: 
+# Simple: deviceId=auto. 
+# Array:  minibatchSize=256:512*3:1024. 
+# Set:  sets of conﬁguration parameters of any type,seperated by ; or new line
+
+#2:CommandsandActions
+
+#3:ConﬁgurationOverloadsIntheCommandLine  example:cntk configFile=yourExp.cntk stderr="c:\temp\newpath"
+
+#4:LayeredConﬁgurationFiles
+#cntk configFile=yourExp1.cntk+yourExp2.cntk
+# or
+# first line of yourExp2.cntk : include=yourExp1.cntk and then cntk configFile=yourExp2.cntk
+
+#5: StringizeVariables ????????????
+###########################################

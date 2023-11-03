@@ -1,0 +1,58 @@
+# If set to true, always initialize the network on CPU, making initialization consistent across CPU and GPU targets (for testing).
+initOnCPUOnly=true
+
+command=Train
+
+stderr = E:\Compensation\Programs\cntk\temp\OutTrain.log #log file
+precision=float 
+
+#######################################
+#  TRAINING CONFIG (Simple, Fixed LR) #
+#######################################
+
+Train=[
+    action=train
+	modelPath=E:\Compensation\Programs\cntk\temp\cntkSpeech.dnn
+    deviceId=-1
+    traceLevel=2 # 0 (limited output), 1 (medium output) and 2 (verbose output) 
+	
+
+    SimpleNetworkBuilder=[
+		layerSizes=400:500:717
+        trainingCriterion=CrossEntropyWithSoftmax
+        evalCriterion=ClassificationError
+        #layerTypes=SIGMOID
+        initValueScale=1.0
+        applyMeanVarNorm=true
+        uniformInit=true
+        needPrior=true	
+    ]
+
+
+    # configuration parameters of the SGD procedure
+    SGD = [
+        epochSize = 0                   # =0 means size of the training set
+        minibatchSize = 25
+        learningRatesPerSample = 0.04   # gradient contribution from each sample
+        maxEpochs = 100
+    ]
+
+    # configuration of data reading
+   reader = [
+
+        readerType = "CNTKTextFormatReader"
+        file = "LdaDataAndLblCntk.txt"
+        
+        input = [
+            features = [
+                dim = 400
+                format = "dense"
+            ]
+            labels = [
+                dim = 717     # there are 3 different labels
+                format = "dense"
+            ]
+        ]
+    ]
+
+]
